@@ -1,0 +1,43 @@
+{
+  "name": "mimir",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Mimir (智慧之泉) — Personal Context & Memory Hub for the LLM Era",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.7.1",
+    "@codemirror/lang-markdown": "^6.3.1",
+    "@codemirror/language": "^6.10.3",
+    "@codemirror/language-data": "^6.5.1",
+    "@codemirror/search": "^6.5.6",
+    "@codemirror/state": "^6.4.1",
+    "@codemirror/view": "^6.34.1",
+    "@lezer/common": "^1.2.2",
+    "@lezer/highlight": "^1.2.1",
+    "@lezer/markdown": "^1.3.0",
+    "lucide-react": "^0.454.0",
+    "mermaid": "^11.3.0",
+    "minisearch": "^7.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zustand": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "vitest": "^2.1.8"
+  }
+}

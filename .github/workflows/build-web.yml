@@ -1,0 +1,61 @@
+name: Build Mimir Web Dist
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-web:
+    name: Typecheck & Build Web Bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: TypeScript typecheck
+        run: npm run typecheck
+
+      - name: Run unit tests (Vitest)
+        run: npm test
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Package mimir-web-dist.tar.gz
+        run: tar -czf mimir-web-dist.tar.gz -C dist .
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mimir-web-dist
+          path: mimir-web-dist.tar.gz
+          retention-days: 30
+
+      - name: Publish rolling web-latest release (main branch)
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: web-latest
+          name: Mimir Web (Latest Build)
+          body: |
+            Automated cloud build of Mimir Web UI (`mimir-web-dist.tar.gz`).
+            Download and extract on your Ubuntu server without running local builds.
+          files: mimir-web-dist.tar.gz
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,266 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.22);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
+}
+
+/* CodeMirror 6 Mimir Live Preview Styles */
+.cm-mimir-h1 {
+  font-size: 1.85rem;
+  line-height: 1.35;
+  font-weight: 700;
+  color: #f8fafc;
+  padding-top: 0.4rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  margin-bottom: 0.35rem;
+}
+.cm-mimir-h2 {
+  font-size: 1.4rem;
+  line-height: 1.4;
+  font-weight: 700;
+  color: #f1f5f9;
+  padding-top: 0.65rem;
+}
+.cm-mimir-h3 {
+  font-size: 1.15rem;
+  line-height: 1.45;
+  font-weight: 600;
+  color: #e2e8f0;
+  padding-top: 0.4rem;
+}
+.cm-mimir-h4,
+.cm-mimir-h5,
+.cm-mimir-h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.cm-mimir-bold {
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.cm-mimir-inline-code {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.875em;
+  background-color: rgba(99, 102, 241, 0.14);
+  color: #a5b4fc;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.cm-mimir-tag {
+  font-size: 0.85em;
+  color: #38bdf8;
+  background-color: rgba(56, 189, 248, 0.12);
+  padding: 1px 6px;
+  border-radius: 9999px;
+}
+
+.cm-mimir-wikilink {
+  color: #818cf8;
+  background-color: rgba(129, 140, 248, 0.12);
+  border-bottom: 1px dashed rgba(129, 140, 248, 0.55);
+  padding: 0 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.cm-mimir-wikilink:hover {
+  background-color: rgba(129, 140, 248, 0.25);
+  color: #c7d2fe;
+}
+.cm-mimir-wikilink-missing {
+  color: #fbbf24;
+  background-color: rgba(251, 191, 36, 0.1);
+  border-bottom-color: rgba(251, 191, 36, 0.45);
+}
+.cm-mimir-wikilink-raw {
+  color: #a5b4fc;
+}
+
+/* Fenced Code Blocks */
+.cm-mimir-code-fence-start,
+.cm-mimir-code-fence-end,
+.cm-mimir-code-line {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.875rem;
+  background-color: #161925;
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+}
+.cm-mimir-code-fence-start {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+  color: #64748b;
+  position: relative;
+}
+.cm-mimir-code-fence-end {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  color: #64748b;
+}
+.cm-mimir-code-bar {
+  float: right;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+.cm-mimir-code-lang {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.04em;
+}
+.cm-mimir-copy-btn {
+  font-family: Inter, sans-serif;
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 4px;
+  background: rgba(99, 102, 241, 0.18);
+  color: #c7d2fe;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.cm-mimir-copy-btn:hover {
+  background: rgba(99, 102, 241, 0.35);
+}
+.cm-mimir-copy-btn.copied {
+  background: rgba(34, 197, 94, 0.22);
+  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+/* Mermaid Preview */
+.cm-mimir-mermaid-box {
+  display: block;
+  margin: 10px 0 14px 0;
+  padding: 16px;
+  background: #131622;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 8px;
+  overflow-x: auto;
+  text-align: center;
+}
+.cm-mimir-mermaid-box svg {
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* Callouts */
+.cm-mimir-callout {
+  border-left: 3px solid #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+}
+.cm-mimir-callout-tip {
+  border-left-color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+}
+.cm-mimir-callout-warning,
+.cm-mimir-callout-caution {
+  border-left-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.09);
+}
+.cm-mimir-callout-important {
+  border-left-color: #a855f7;
+  background: rgba(168, 85, 247, 0.09);
+}
+.cm-mimir-callout-title {
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+/* Blockquote */
+.cm-mimir-quote {
+  border-left: 3px solid rgba(148, 163, 184, 0.35);
+  padding-left: 12px !important;
+  color: #94a3b8;
+}
+
+/* GFM Tables */
+.cm-mimir-table-row,
+.cm-mimir-table-sep {
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 0.86rem;
+  background: rgba(30, 41, 59, 0.35);
+  padding-left: 8px !important;
+}
+.cm-mimir-table-sep {
+  color: #475569;
+}
+
+/* Transclusion Embed Box */
+.cm-mimir-embed-box {
+  display: block;
+  margin: 8px 0 12px 0;
+  border: 1px solid rgba(99, 102, 241, 0.32);
+  border-left: 3px solid #818cf8;
+  border-radius: 8px;
+  background: rgba(22, 25, 37, 0.85);
+  overflow: hidden;
+}
+.cm-mimir-embed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: rgba(99, 102, 241, 0.12);
+  font-size: 12px;
+  color: #c7d2fe;
+  font-weight: 500;
+}
+.cm-mimir-embed-jump {
+  font-size: 11px;
+  color: #a5b4fc;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+.cm-mimir-embed-jump:hover {
+  text-decoration: underline;
+}
+.cm-mimir-embed-body {
+  margin: 0;
+  padding: 10px 14px;
+  font-family: Inter, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #cbd5e1;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Inline Image Preview */
+.cm-mimir-img-wrap {
+  display: block;
+  margin: 8px 0 12px 0;
+}
+.cm-mimir-img {
+  max-width: 100%;
+  max-height: 360px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
