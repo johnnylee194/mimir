@@ -6,6 +6,7 @@ import {
   Copy,
   Eye,
   EyeOff,
+  Share2,
   Sparkles,
   Trash2,
   X,
@@ -23,6 +24,7 @@ export const ContextBasket: React.FC = () => {
   const clearBasket = useVaultStore((s) => s.clearBasket);
   const setSelectedPromptPath = useVaultStore((s) => s.setSelectedPromptPath);
   const openFile = useVaultStore((s) => s.openFile);
+  const openExportModal = useVaultStore((s) => s.openExportModal);
   const pushToast = useVaultStore((s) => s.pushToast);
 
   const [copied, setCopied] = useState(false);
@@ -200,19 +202,32 @@ export const ContextBasket: React.FC = () => {
           </button>
         </div>
 
-        <button
-          type="button"
-          disabled={basketItems.length === 0}
-          onClick={handleCopy}
-          className={`w-full py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
-            copied
-              ? 'bg-emerald-600 text-white'
-              : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm shadow-indigo-950'
-          }`}
-        >
-          {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-          <span>{copied ? '已复制 Context 到剪贴板！' : '一键复制给 Gemini / Antigravity'}</span>
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            disabled={basketItems.length === 0}
+            onClick={handleCopy}
+            className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+              copied
+                ? 'bg-emerald-600 text-white'
+                : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm shadow-indigo-950'
+            }`}
+          >
+            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            <span>{copied ? '已复制 Context！' : '复制给 LLM'}</span>
+          </button>
+
+          <button
+            type="button"
+            disabled={basketItems.length === 0}
+            onClick={() => openExportModal('basket')}
+            title="将篮子内容导出为净化 MD / 社交长图 / PDF"
+            className="py-2 px-2.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700/80 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span>导出</span>
+          </button>
+        </div>
       </div>
     </div>
   );

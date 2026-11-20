@@ -6,6 +6,7 @@ import { RightPanel } from './components/RightPanel';
 import { SpotlightSearch } from './components/SpotlightSearch';
 import { CommandPalette } from './components/CommandPalette';
 import { QuickRefillModal } from './components/QuickRefillModal';
+import { ExportModal } from './components/ExportModal';
 
 export const App: React.FC = () => {
   const leftSidebarOpen = useVaultStore((s) => s.leftSidebarOpen);
@@ -15,6 +16,7 @@ export const App: React.FC = () => {
   const setSpotlightOpen = useVaultStore((s) => s.setSpotlightOpen);
   const setCommandPaletteOpen = useVaultStore((s) => s.setCommandPaletteOpen);
   const setQuickRefillOpen = useVaultStore((s) => s.setQuickRefillOpen);
+  const openExportModal = useVaultStore((s) => s.openExportModal);
   const toggleBothSidebars = useVaultStore((s) => s.toggleBothSidebars);
 
   // Global keyboard-first shortcut bindings
@@ -52,6 +54,13 @@ export const App: React.FC = () => {
       if (key === 'v' && e.shiftKey) {
         e.preventDefault();
         setQuickRefillOpen(true);
+        return;
+      }
+
+      // Ctrl+E -> Clean Export Modal (MD / PNG / PDF)
+      if (key === 'e' && !e.shiftKey) {
+        e.preventDefault();
+        openExportModal('current');
       }
     };
 
@@ -61,6 +70,7 @@ export const App: React.FC = () => {
     setSpotlightOpen,
     setCommandPaletteOpen,
     setQuickRefillOpen,
+    openExportModal,
     toggleBothSidebars,
   ]);
 
@@ -74,6 +84,7 @@ export const App: React.FC = () => {
       <SpotlightSearch />
       <CommandPalette />
       <QuickRefillModal />
+      <ExportModal />
 
       {/* Toast Notifications */}
       <div className="fixed bottom-4 right-4 z-[60] flex flex-col gap-2 pointer-events-none">

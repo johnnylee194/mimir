@@ -11,6 +11,7 @@ import {
   X,
   Pencil,
   Check,
+  Share2,
 } from 'lucide-react';
 import { useVaultStore } from '../store/useVaultStore';
 import { getBaseName } from '../utils/markdown';
@@ -37,6 +38,7 @@ export const EditorPane: React.FC = () => {
   const deleteFile = useVaultStore((s) => s.deleteFile);
   const toggleLeftSidebar = useVaultStore((s) => s.toggleLeftSidebar);
   const toggleRightSidebar = useVaultStore((s) => s.toggleRightSidebar);
+  const openExportModal = useVaultStore((s) => s.openExportModal);
 
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
@@ -125,6 +127,16 @@ export const EditorPane: React.FC = () => {
               >
                 <GitFork className="w-3.5 h-3.5" />
                 <span className="hidden xl:inline">聚合双链</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => openExportModal('current')}
+                title="净化导出 (Clean MD / 社交长图 / 简历 PDF) [Ctrl+E]"
+                className="flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/25 transition-colors"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span className="hidden xl:inline">导出</span>
               </button>
 
               <button
