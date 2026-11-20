@@ -106,6 +106,8 @@ interface VaultState {
   spotlightOpen: boolean;
   commandPaletteOpen: boolean;
   quickRefillOpen: boolean;
+  exportModalOpen: boolean;
+  exportSource: 'current' | 'basket';
 
   // Context Basket
   basketItems: BasketItem[];
@@ -137,6 +139,8 @@ interface VaultState {
   setSpotlightOpen: (open: boolean) => void;
   setCommandPaletteOpen: (open: boolean) => void;
   setQuickRefillOpen: (open: boolean) => void;
+  openExportModal: (source?: 'current' | 'basket') => void;
+  setExportModalOpen: (open: boolean) => void;
 
   // Context Basket actions
   addToBasket: (path: string, heading?: string) => void;
@@ -177,6 +181,8 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   spotlightOpen: false,
   commandPaletteOpen: false,
   quickRefillOpen: false,
+  exportModalOpen: false,
+  exportSource: 'current',
 
   basketItems: [],
   selectedPromptPath: null,
@@ -413,6 +419,9 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   setSpotlightOpen: (open) => set({ spotlightOpen: open }),
   setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
   setQuickRefillOpen: (open) => set({ quickRefillOpen: open }),
+  openExportModal: (source = 'current') =>
+    set({ exportModalOpen: true, exportSource: source }),
+  setExportModalOpen: (open) => set({ exportModalOpen: open }),
 
   addToBasket: (path, heading) => {
     const state = get();

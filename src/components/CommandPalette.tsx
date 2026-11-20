@@ -18,6 +18,7 @@ export const CommandPalette: React.FC = () => {
 
   const setSpotlightOpen = useVaultStore((s) => s.setSpotlightOpen);
   const setQuickRefillOpen = useVaultStore((s) => s.setQuickRefillOpen);
+  const openExportModal = useVaultStore((s) => s.openExportModal);
   const toggleBothSidebars = useVaultStore((s) => s.toggleBothSidebars);
   const addToBasket = useVaultStore((s) => s.addToBasket);
   const loadRecursiveLinksToBasket = useVaultStore((s) => s.loadRecursiveLinksToBasket);
@@ -47,6 +48,19 @@ export const CommandPalette: React.FC = () => {
         shortcut: 'Ctrl+Shift+V',
         category: 'LLM 协同',
         run: () => setQuickRefillOpen(true),
+      },
+      {
+        id: 'export-current',
+        label: '净化导出当前文档 (Clean MD / 社交长图 / 简历 PDF)',
+        shortcut: 'Ctrl+E',
+        category: '导出',
+        run: () => openExportModal('current'),
+      },
+      {
+        id: 'export-basket',
+        label: '净化导出 Context 篮子内容 (Clean MD / 长图 / PDF)',
+        category: '导出',
+        run: () => openExportModal('basket'),
       },
       {
         id: 'new-doc',
@@ -122,6 +136,7 @@ export const CommandPalette: React.FC = () => {
     splitPath,
     setSpotlightOpen,
     setQuickRefillOpen,
+    openExportModal,
     createFile,
     toggleBothSidebars,
     closeSplitPane,
