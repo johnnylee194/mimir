@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Default capability for Mimir desktop and mobile windows",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}
