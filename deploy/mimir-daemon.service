@@ -1,0 +1,15 @@
+[Unit]
+Description=Mimir Sync & Emergency Web Daemon
+After=network.target
+
+[Service]
+Type=simple
+User=jlee
+WorkingDirectory=/home/jlee/mimir
+ExecStart=/home/jlee/.nvm/versions/node/v20.20.2/bin/node /home/jlee/mimir/server/index.mjs
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

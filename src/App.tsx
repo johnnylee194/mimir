@@ -7,17 +7,36 @@ import { SpotlightSearch } from './components/SpotlightSearch';
 import { CommandPalette } from './components/CommandPalette';
 import { QuickRefillModal } from './components/QuickRefillModal';
 import { ExportModal } from './components/ExportModal';
+import { SyncSettingsModal } from './components/SyncSettingsModal';
+import { AlertTriangle, Columns2, X } from 'lucide-react';
 
 export const App: React.FC = () => {
   const leftSidebarOpen = useVaultStore((s) => s.leftSidebarOpen);
   const rightSidebarOpen = useVaultStore((s) => s.rightSidebarOpen);
   const toasts = useVaultStore((s) => s.toasts);
+  const conflicts = useVaultStore((s) => s.conflicts);
+  const syncConfig = useVaultStore((s) => s.syncConfig);
 
   const setSpotlightOpen = useVaultStore((s) => s.setSpotlightOpen);
   const setCommandPaletteOpen = useVaultStore((s) => s.setCommandPaletteOpen);
   const setQuickRefillOpen = useVaultStore((s) => s.setQuickRefillOpen);
   const openExportModal = useVaultStore((s) => s.openExportModal);
   const toggleBothSidebars = useVaultStore((s) => s.toggleBothSidebars);
+  const syncNow = useVaultStore((s) => s.syncNow);
+  const openFile = useVaultStore((s) => s.openFile);
+  const dismissConflict = useVaultStore((s) => s.dismissConflict);
+
+  // Periodic background sync with Ubuntu Mimir Daemon
+  useEffect(() => {
+    if (!syncConfig.enabled || !syncConfig.autoSync || !syncConfig.serverUrl) return;
+    syncNow(true);
+    const timer = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        syncNow(true);
+      }
+    }, 30000);
+    return () => clearInterval(timer);
+  }, [syncConfig.enabled, syncConfig.autoSync, syncConfig.serverUrl, syncNow]);
 
   // Global keyboard-first shortcut bindings
   useEffect(() => {
@@ -75,16 +94,52 @@ export const App: React.FC = () => {
   ]);
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex bg-[#0f1117] text-slate-200">
-      {leftSidebarOpen && <Sidebar />}
-      <EditorPane />
-      {rightSidebarOpen && <RightPanel />}
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#0f1117] text-slate-200">
+      {/* Gentle Lossless Conflict Banner */}
+      {conflicts.length > 0 && (
+        <div className="px-4 py-1.5 bg-amber-950/90 border-b border-amber-500/40 text-amber-200 text-xs flex items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="truncate">
+              同步冲突保护已生效：<strong>{conflicts[0].originalPath}</strong> 已无损保留双方修改副本 ({conflicts[0].conflictPath})
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                openFile(conflicts[0].originalPath);
+                openFile(conflicts[0].conflictPath, { split: true });
+              }}
+              className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/25 hover:bg-amber-500/40 text-amber-100 font-medium"
+            >
+              <Columns2 className="w-3.5 h-3.5" />
+              <span>分屏对照合并</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => dismissConflict(conflicts[0].conflictPath)}
+              className="text-amber-300 hover:text-white"
+              title="关闭提示"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="flex-1 min-h-0 flex overflow-hidden">
+        {leftSidebarOpen && <Sidebar />}
+        <EditorPane />
+        {rightSidebarOpen && <RightPanel />}
+      </div>
 
       {/* Modals */}
       <SpotlightSearch />
       <CommandPalette />
       <QuickRefillModal />
       <ExportModal />
+      <SyncSettingsModal />
 
       {/* Toast Notifications */}
       <div className="fixed bottom-4 right-4 z-[60] flex flex-col gap-2 pointer-events-none">

@@ -11,6 +11,10 @@ import {
   Star,
   ClipboardPaste,
   RotateCcw,
+  Cloud,
+  CloudOff,
+  AlertTriangle,
+  RefreshCw,
 } from 'lucide-react';
 import { useVaultStore } from '../store/useVaultStore';
 import { buildFolderTree, getBaseName } from '../utils/markdown';
@@ -25,6 +29,9 @@ export const Sidebar: React.FC = () => {
   const setSpotlightOpen = useVaultStore((s) => s.setSpotlightOpen);
   const setQuickRefillOpen = useVaultStore((s) => s.setQuickRefillOpen);
   const resetSampleVault = useVaultStore((s) => s.resetSampleVault);
+  const syncStatus = useVaultStore((s) => s.syncStatus);
+  const syncConfig = useVaultStore((s) => s.syncConfig);
+  const setSyncSettingsOpen = useVaultStore((s) => s.setSyncSettingsOpen);
 
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({
     Projects: true,
@@ -234,7 +241,41 @@ export const Sidebar: React.FC = () => {
 
       {/* Footer Status */}
       <div className="h-9 px-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500">
-        <span>Local-First Vault</span>
+        <button
+          type="button"
+          onClick={() => setSyncSettingsOpen(true)}
+          title="配置 Ubuntu 同步中枢 & GitHub 自动备份"
+          className={`flex items-center gap-1.5 hover:text-slate-200 transition-colors ${
+            syncStatus === 'conflict'
+              ? 'text-amber-400'
+              : syncStatus === 'error'
+                ? 'text-rose-400'
+                : syncConfig.enabled
+                  ? 'text-emerald-400'
+                  : 'text-slate-400'
+          }`}
+        >
+          {syncStatus === 'syncing' ? (
+            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+          ) : syncStatus === 'conflict' ? (
+            <AlertTriangle className="w-3.5 h-3.5" />
+          ) : syncConfig.enabled ? (
+            <Cloud className="w-3.5 h-3.5" />
+          ) : (
+            <CloudOff className="w-3.5 h-3.5" />
+          )}
+          <span>
+            {syncStatus === 'syncing'
+              ? '同步中...'
+              : syncStatus === 'conflict'
+                ? '存在冲突'
+                : syncStatus === 'error'
+                  ? '同步异常'
+                  : syncConfig.enabled
+                    ? 'Ubuntu 已连接'
+                    : '本地离线'}
+          </span>
+        </button>
         <button
           type="button"
           onClick={() => {

@@ -19,6 +19,8 @@ export const CommandPalette: React.FC = () => {
   const setSpotlightOpen = useVaultStore((s) => s.setSpotlightOpen);
   const setQuickRefillOpen = useVaultStore((s) => s.setQuickRefillOpen);
   const openExportModal = useVaultStore((s) => s.openExportModal);
+  const setSyncSettingsOpen = useVaultStore((s) => s.setSyncSettingsOpen);
+  const syncNow = useVaultStore((s) => s.syncNow);
   const toggleBothSidebars = useVaultStore((s) => s.toggleBothSidebars);
   const addToBasket = useVaultStore((s) => s.addToBasket);
   const loadRecursiveLinksToBasket = useVaultStore((s) => s.loadRecursiveLinksToBasket);
@@ -61,6 +63,20 @@ export const CommandPalette: React.FC = () => {
         label: '净化导出 Context 篮子内容 (Clean MD / 长图 / PDF)',
         category: '导出',
         run: () => openExportModal('basket'),
+      },
+      {
+        id: 'sync-settings',
+        label: '打开 Ubuntu 同步中枢 & GitHub 自动备份设置',
+        category: '同步',
+        run: () => setSyncSettingsOpen(true),
+      },
+      {
+        id: 'sync-now',
+        label: '立即与 Ubuntu 服务端双向同步',
+        category: '同步',
+        run: () => {
+          syncNow();
+        },
       },
       {
         id: 'new-doc',
@@ -137,6 +153,8 @@ export const CommandPalette: React.FC = () => {
     setSpotlightOpen,
     setQuickRefillOpen,
     openExportModal,
+    setSyncSettingsOpen,
+    syncNow,
     createFile,
     toggleBothSidebars,
     closeSplitPane,
