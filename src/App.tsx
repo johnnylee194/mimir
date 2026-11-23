@@ -8,9 +8,12 @@ import { CommandPalette } from './components/CommandPalette';
 import { QuickRefillModal } from './components/QuickRefillModal';
 import { ExportModal } from './components/ExportModal';
 import { SyncSettingsModal } from './components/SyncSettingsModal';
+import { MobileLayout } from './components/MobileLayout';
+import { useIsMobile } from './hooks/useIsMobile';
 import { AlertTriangle, Columns2, X } from 'lucide-react';
 
 export const App: React.FC = () => {
+  const isMobile = useIsMobile();
   const leftSidebarOpen = useVaultStore((s) => s.leftSidebarOpen);
   const rightSidebarOpen = useVaultStore((s) => s.rightSidebarOpen);
   const toasts = useVaultStore((s) => s.toasts);
@@ -128,11 +131,17 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      <div className="flex-1 min-h-0 flex overflow-hidden">
-        {leftSidebarOpen && <Sidebar />}
-        <EditorPane />
-        {rightSidebarOpen && <RightPanel />}
-      </div>
+      {isMobile ? (
+        <div className="flex-1 min-h-0 flex overflow-hidden">
+          <MobileLayout />
+        </div>
+      ) : (
+        <div className="flex-1 min-h-0 flex overflow-hidden">
+          {leftSidebarOpen && <Sidebar />}
+          <EditorPane />
+          {rightSidebarOpen && <RightPanel />}
+        </div>
+      )}
 
       {/* Modals */}
       <SpotlightSearch />

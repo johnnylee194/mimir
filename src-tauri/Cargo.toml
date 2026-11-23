@@ -1,0 +1,18 @@
+[package]
+name = "mimir"
+version = "0.4.0"
+description = "Mimir (智慧之泉) — Personal Context & Memory Hub for the LLM Era"
+authors = ["jlee"]
+edition = "2021"
+
+[lib]
+name = "mimir_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
