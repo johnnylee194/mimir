@@ -17,6 +17,20 @@ import {
   collectFolderDocuments,
   collectRecursiveLinks,
 } from '../utils/contextBundler';
+import {
+  ConflictNotice,
+  GitBackupStatus,
+  SyncConfig,
+  SyncStatus,
+  deleteRemoteFile,
+  loadSyncConfig,
+  loadSyncedHashes,
+  performFullSync,
+  pushSingleAsset,
+  pushSingleFile,
+  saveSyncConfig,
+  saveSyncedHashes,
+} from '../utils/syncClient';
 
 const STORAGE_KEY_FILES = 'mimir_vault_files_v1';
 const STORAGE_KEY_ASSETS = 'mimir_vault_assets_v1';
@@ -108,6 +122,16 @@ interface VaultState {
   quickRefillOpen: boolean;
   exportModalOpen: boolean;
   exportSource: 'current' | 'basket';
+  syncSettingsOpen: boolean;
+
+  // Sync state (Phase 3)
+  syncConfig: SyncConfig;
+  syncStatus: SyncStatus;
+  syncedHashes: Record<string, string>;
+  lastSyncAt: number | null;
+  syncError: string | null;
+  gitBackupStatus: GitBackupStatus | null;
+  conflicts: ConflictNotice[];
 
   // Context Basket
   basketItems: BasketItem[];
@@ -141,6 +165,12 @@ interface VaultState {
   setQuickRefillOpen: (open: boolean) => void;
   openExportModal: (source?: 'current' | 'basket') => void;
   setExportModalOpen: (open: boolean) => void;
+  setSyncSettingsOpen: (open: boolean) => void;
+
+  // Sync actions (Phase 3)
+  updateSyncConfig: (config: SyncConfig) => void;
+  syncNow: (silent?: boolean) => Promise<void>;
+  dismissConflict: (conflictPath: string) => void;
 
   // Context Basket actions
   addToBasket: (path: string, heading?: string) => void;
@@ -159,9 +189,13 @@ interface VaultState {
 }
 
 const initialFiles = loadInitialFiles();
+const initialSyncConfig = loadSyncConfig();
 const firstFile = initialFiles['Welcome_to_Mimir.md']
   ? 'Welcome_to_Mimir.md'
   : Object.keys(initialFiles)[0] ?? null;
+
+// Debounced per-file background push timers
+const pushTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 export const useVaultStore = create<VaultState>((set, get) => ({
   files: initialFiles,
@@ -183,6 +217,15 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   quickRefillOpen: false,
   exportModalOpen: false,
   exportSource: 'current',
+  syncSettingsOpen: false,
+
+  syncConfig: initialSyncConfig,
+  syncStatus: initialSyncConfig.enabled ? 'synced' : 'offline',
+  syncedHashes: loadSyncedHashes(),
+  lastSyncAt: null,
+  syncError: null,
+  gitBackupStatus: null,
+  conflicts: [],
 
   basketItems: [],
   selectedPromptPath: null,
@@ -250,6 +293,78 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     };
     persistFiles(nextFiles);
     set({ files: nextFiles });
+
+    // Auto-debounced background push if sync is enabled
+    const { syncConfig } = get();
+    if (syncConfig.enabled && syncConfig.autoSync && syncConfig.serverUrl) {
+      const prevTimer = pushTimers.get(path);
+      if (prevTimer) clearTimeout(prevTimer);
+      pushTimers.set(
+        path,
+        setTimeout(async () => {
+          pushTimers.delete(path);
+          const cur = get();
+          const latestFile = cur.files[path];
+          if (!latestFile || !cur.syncConfig.enabled) return;
+          try {
+            const baseHash = cur.syncedHashes[path] ?? null;
+            const res = await pushSingleFile(
+              cur.syncConfig,
+              path,
+              latestFile.content,
+              baseHash
+            );
+            if (res.conflict && res.conflictPath && res.serverContent !== undefined) {
+              const updatedFiles = {
+                ...get().files,
+                [path]: {
+                  path,
+                  content: res.serverContent,
+                  updatedAt: res.serverUpdatedAt ?? Date.now(),
+                },
+                [res.conflictPath]: {
+                  path: res.conflictPath,
+                  content: latestFile.content,
+                  updatedAt: Date.now(),
+                },
+              };
+              const nextHashes = {
+                ...get().syncedHashes,
+                ...(res.serverHash ? { [path]: res.serverHash } : {}),
+              };
+              persistFiles(updatedFiles);
+              saveSyncedHashes(nextHashes);
+              set((s) => ({
+                files: updatedFiles,
+                syncedHashes: nextHashes,
+                syncStatus: 'conflict',
+                conflicts: [
+                  ...s.conflicts.filter((c) => c.conflictPath !== res.conflictPath),
+                  {
+                    originalPath: path,
+                    conflictPath: res.conflictPath!,
+                    detectedAt: Date.now(),
+                  },
+                ],
+              }));
+              get().pushToast(
+                `检测到并发修改冲突：已保留双方副本 (${res.conflictPath})`,
+                'warning'
+              );
+            } else if (res.hash) {
+              const nextHashes = { ...get().syncedHashes, [path]: res.hash };
+              saveSyncedHashes(nextHashes);
+              set({ syncedHashes: nextHashes, lastSyncAt: Date.now(), syncError: null });
+            }
+          } catch (err) {
+            set({
+              syncStatus: 'error',
+              syncError: err instanceof Error ? err.message : String(err),
+            });
+          }
+        }, 1800)
+      );
+    }
   },
 
   createFile: (rawPath, initialContent) => {
@@ -349,6 +464,9 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       basketItems: state.basketItems.filter((b) => b.path !== path),
     });
     get().pushToast(`已删除 ${path}`, 'info');
+    if (state.syncConfig.enabled && state.syncConfig.serverUrl) {
+      deleteRemoteFile(state.syncConfig, path).catch(() => {});
+    }
   },
 
   toggleFavorite: (path) => {
@@ -402,6 +520,9 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     persistAssets(nextAssets);
     set({ assets: nextAssets });
     state.pushToast(`图片已归档至 ${assetPath}`, 'success');
+    if (state.syncConfig.enabled && state.syncConfig.serverUrl) {
+      pushSingleAsset(state.syncConfig, assetPath, dataUrl).catch(() => {});
+    }
     return assetPath;
   },
 
@@ -422,6 +543,87 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   openExportModal: (source = 'current') =>
     set({ exportModalOpen: true, exportSource: source }),
   setExportModalOpen: (open) => set({ exportModalOpen: open }),
+  setSyncSettingsOpen: (open) => set({ syncSettingsOpen: open }),
+
+  updateSyncConfig: (config) => {
+    saveSyncConfig(config);
+    set({
+      syncConfig: config,
+      syncStatus: config.enabled ? 'synced' : 'offline',
+      syncError: null,
+    });
+  },
+
+  syncNow: async (silent = false) => {
+    const state = get();
+    if (!state.syncConfig.enabled || !state.syncConfig.serverUrl) return;
+    if (state.syncStatus === 'syncing') return;
+
+    set({ syncStatus: 'syncing', syncError: null });
+    try {
+      const result = await performFullSync(
+        state.syncConfig,
+        state.files,
+        state.assets,
+        state.syncedHashes
+      );
+      persistFiles(result.files);
+      persistAssets(result.assets);
+      saveSyncedHashes(result.syncedHashes);
+
+      const mergedConflicts = [
+        ...state.conflicts,
+        ...result.conflicts.filter(
+          (nc) => !state.conflicts.some((oc) => oc.conflictPath === nc.conflictPath)
+        ),
+      ];
+
+      set({
+        files: result.files,
+        assets: result.assets,
+        syncedHashes: result.syncedHashes,
+        lastSyncAt: Date.now(),
+        gitBackupStatus: result.gitBackup ?? state.gitBackupStatus,
+        conflicts: mergedConflicts,
+        syncStatus: mergedConflicts.length > 0 ? 'conflict' : 'synced',
+        syncError: null,
+      });
+
+      if (!silent) {
+        if (result.conflicts.length > 0) {
+          state.pushToast(
+            `同步完成，但检测到 ${result.conflicts.length} 个冲突（已无损保留双方副本）`,
+            'warning'
+          );
+        } else {
+          state.pushToast(
+            `双向同步完成：拉取 ${result.pulledCount} 篇 · 推送 ${result.pushedCount} 篇`,
+            'success'
+          );
+        }
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      set({ syncStatus: 'error', syncError: message });
+      if (!silent) {
+        state.pushToast(`同步失败：${message}`, 'warning');
+      }
+    }
+  },
+
+  dismissConflict: (conflictPath) =>
+    set((s) => {
+      const next = s.conflicts.filter((c) => c.conflictPath !== conflictPath);
+      return {
+        conflicts: next,
+        syncStatus:
+          next.length > 0
+            ? 'conflict'
+            : s.syncConfig.enabled
+              ? 'synced'
+              : 'offline',
+      };
+    }),
 
   addToBasket: (path, heading) => {
     const state = get();
